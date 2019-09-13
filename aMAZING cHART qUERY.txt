@@ -1,0 +1,81 @@
+[?4/?16/?2019 3:20 PM] ****************  QUERY OF WRONG PATIENT PROVIDER *********************
+
+select * from amazing_charts_errors where Convert(date,Entry_DATE)=Convert(date,GETDATE()) and 
+				ISNULL(ERROR_TYPE,'') like '%InvPro%' 
+
+
+
+
+
+
+[?4/?16/?2019 8:19 AM]  **************  QUERY OF CHARGE PICKING STATUS OF ANY AC_FILE  *******************
+select case Isnull(Text_File_Charges,0)      when '1' then  case isnull(efs,0)  When '0' then 'File' when '1' then 'System'  
+                 end when '0' then 'System' end As Text_File_Charges from Practices where practice_code = 1010782 
+
+
+
+
+
+
+
+*************** Query for Duplicate Account, or claims checking **************
+[?4/?17/?2019 10:20 AM] WAJID HUSSAIN: 
+select MTBC_Claim_No,count(*) as duplicate from AC_History_Log 
+				where Convert(date,Entry_DATE)=Convert(date,GETDATE()) 
+				group by MTBC_Claim_No having COUNT(*)>1 
+onvert(date,GETDATE()) and 
+				ISNULL(ERROR_TYPE,'') like '%InvPro%' 
+
+
+
+
+
+
+*************** Imp query to create dump table and drop it and data in it and select from it.
+
+if object_id ('tempdb..#r') is not null drop table #r
+	select REFERRAL_LNAME,REFERRAL_FNAME,REFERRAL_CODE,row_number() over (partition by REFERRAL_LNAME,REFERRAL_FNAME order by REFERRAL_LNAME,REFERRAL_FNAME)AS test
+   into #r from Referral_Physicians where npi in ('1700881067','1710021209','1376535310')
+   select  * from #r where test=1
+
+
+
+
+
+
+*************** Daily 138 Checking File Query ***************
+
+SELECT * FROM CS_CUSTOMER_SUPPORT_INFO WHERE CS_USER_NAME='138TURACOVA' 
+AND ISNULL(CS_CASE_TITLE,'') LIKE '%DOS%' AND (ISNULL(CS_CASE_DETAIL,'') LIKE '%I EXPORTED%' 
+or ISNULL(CS_CASE_DETAIL,'') LIKE '%I RE-EXPORTED%' or ISNULL(CS_CASE_DETAIL,'') LIKE '%I REEXPORTED%')
+AND CONVERT(DATE,CS_CREATED_DATE)>=CONVERT(DATE,GETDATE()-1)
+
+
+
+// From Imagine dump to Practice_Insurance_Name after Mapping, Update Query.
+
+UPDATE Prac_ins
+SET Prac_ins.Insurance_Code = dm.MTBC_Insurance_ID 
+FROM PRACTICARE_INSURANCE_Names AS Prac_ins
+JOIN Imagine_Ins_For_Mapping AS dm
+ON Prac_ins.practice_code = dm.practice_code
+ and Prac_ins.[Hospital_Insurance_Name] = dm.[Hospital_Insurance_Name]
+and Prac_ins.[Hospital_Insurance_Address_1] = dm.[Hospital_Insurance_Address_1]
+and Prac_ins.[Hospital_Insurance_City] = dm.[Hospital_Insurance_City]
+and Prac_ins.[Hospital_Insurance_State] = dm.[Hospital_Insurance_State] 
+and Prac_ins.[Hospital_Insurance_Zip_Code] = dm.[Hospital_Insurance_Zip_Code] 
+and dm.processed is null
+
+
+Amazing Charts Amount Verification Query
+
+select Amount,created_date,* from claim_charges where claim_no in(
+select mtbc_claim_no from ac_history_log where file_id in(
+select file_id from ac_files where convert(date,process_date) = convert(date,getdate())
+) and mtbc_claim_no != 0) and amount = 0.00
+
+
+
+************ DBCRF Link  *****************
+
+http://collaboration/sites/IT/cmfdocs/Lists/DBCRF/DBCRF.aspx#ServerFilter=FilterField1=ID-FilterValue1=18235-FilterOp1=Geq-OverrideScope=RecursiveAll-FallbackLimit=18235-ProcessQStringToCAML=1
